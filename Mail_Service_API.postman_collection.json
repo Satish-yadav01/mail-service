@@ -1,0 +1,86 @@
+{
+  "info": {
+    "name": "Mail Service API",
+    "description": "API collection for Mail Service - Email management with Excel import",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Import Emails from Excel",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": [],
+              "description": "Upload Excel file (.xlsx or .xls)"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/emails/import-excel",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "emails", "import-excel"]
+        },
+        "description": "Upload an Excel file containing email data. The file should have headers matching the Email entity fields. Extra columns will be ignored."
+      },
+      "response": []
+    },
+    {
+      "name": "Add Emails Directly",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"emailStatus\": \"VERIFIED\",\n    \"jobTitle\": \"Software Engineer\",\n    \"companyName\": \"Tech Corp\",\n    \"companyDomain\": \"techcorp.com\",\n    \"location\": \"New York, USA\"\n  },\n  {\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Smith\",\n    \"email\": \"jane.smith@example.com\",\n    \"emailStatus\": \"UNVERIFIED\",\n    \"jobTitle\": \"Product Manager\",\n    \"companyName\": \"Innovation Inc\",\n    \"companyDomain\": \"innovation.com\",\n    \"location\": \"San Francisco, USA\"\n  }\n]"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/emails/add",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "emails", "add"]
+        },
+        "description": "Add emails directly via JSON payload. Extra fields in the request will be ignored."
+      },
+      "response": []
+    },
+    {
+      "name": "Add Single Email with Extra Fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  {\n    \"firstName\": \"Bob\",\n    \"lastName\": \"Johnson\",\n    \"email\": \"bob.johnson@startup.io\",\n    \"emailStatus\": \"VERIFIED\",\n    \"jobTitle\": \"CTO\",\n    \"companyName\": \"Startup IO\",\n    \"companyDomain\": \"startup.io\",\n    \"location\": \"Austin, USA\",\n    \"phoneNumber\": \"555-1234\",\n    \"notes\": \"This field will be ignored\",\n    \"customField\": \"This will also be ignored\"\n  }\n]"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/emails/add",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "emails", "add"]
+        },
+        "description": "Example showing that extra fields (phoneNumber, notes, customField) are ignored during processing."
+      },
+      "response": []
+    }
+  ]
+}

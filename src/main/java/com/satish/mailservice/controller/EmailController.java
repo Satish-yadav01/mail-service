@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.satish.mailservice.aop.TrackTransaction;
 import com.satish.mailservice.aop.TransactionIdAspect;
 import com.satish.mailservice.dto.AsyncResponse;
+import com.satish.mailservice.dto.EmailListResponse;
 import com.satish.mailservice.dto.EmailRequest;
 import com.satish.mailservice.dto.EmailResponse;
 import com.satish.mailservice.dto.EnquiryResponse;
@@ -149,6 +150,39 @@ public class EmailController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new EnquiryResponse(tid, null, null, null, 500, "Error retrieving transaction status: " + e.getMessage(), null, null, null));
+        }
+    }
+
+    /**
+     * Endpoint 4: Get paginated list of emails from database
+     * GET /api/emails/list?page={page}&size={size}
+     * 
+     * @param page Page number (0-indexed, default: 0)
+     * @param size Number of records per page (default: 10)
+     * @return Paginated list of emails with metadata
+     */
+    @GetMapping("/list")
+    @TrackTransaction
+    public ResponseEntity<EmailListResponse> getEmailList(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        try {
+            // Validate parameters
+            if (page < 0) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            if (size <= 0 || size > 100) {
+                // Limit maximum page size to 100 to prevent performance issues
+                size = 10;
+            }
+
+            EmailListResponse response = emailService.getEmailList(page, size);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } finally {
+            TransactionIdAspect.clearTid();
         }
     }
 }

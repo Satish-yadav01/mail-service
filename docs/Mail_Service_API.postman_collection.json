@@ -81,6 +81,129 @@
         "description": "Example showing that extra fields (phoneNumber, notes, customField) are ignored during processing."
       },
       "response": []
+    },
+    {
+      "name": "Enquiry - Check Transaction Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/emails/enquiry?tid=1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "emails", "enquiry"],
+          "query": [
+            {
+              "key": "tid",
+              "value": "1",
+              "description": "Transaction ID to check status"
+            }
+          ]
+        },
+        "description": "Check the status of an async transaction using the TID returned from import-excel or add endpoints."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Email List - Default (Page 0, Size 10)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/emails/list",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "emails", "list"]
+        },
+        "description": "Get the first page of emails with default page size (10 records). Returns paginated response with metadata including total pages, total elements, and navigation flags."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Email List - Custom Page Size",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/emails/list?page=0&size=20",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "emails", "list"],
+          "query": [
+            {
+              "key": "page",
+              "value": "0",
+              "description": "Page number (0-indexed)"
+            },
+            {
+              "key": "size",
+              "value": "20",
+              "description": "Number of records per page (max: 100)"
+            }
+          ]
+        },
+        "description": "Get emails with custom page size. Useful for displaying more records per page."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Email List - Specific Page",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/emails/list?page=2&size=15",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "emails", "list"],
+          "query": [
+            {
+              "key": "page",
+              "value": "2",
+              "description": "Page number (0-indexed, so page 2 is the 3rd page)"
+            },
+            {
+              "key": "size",
+              "value": "15",
+              "description": "Number of records per page"
+            }
+          ]
+        },
+        "description": "Get a specific page of emails. Page numbers are 0-indexed (page 0 is the first page)."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Email List - Large Page Size",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/emails/list?page=0&size=50",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "emails", "list"],
+          "query": [
+            {
+              "key": "page",
+              "value": "0",
+              "description": "Page number"
+            },
+            {
+              "key": "size",
+              "value": "50",
+              "description": "Larger page size for bulk viewing (max: 100)"
+            }
+          ]
+        },
+        "description": "Get emails with a larger page size. Maximum allowed is 100 records per page to prevent performance issues."
+      },
+      "response": []
     }
   ]
 }

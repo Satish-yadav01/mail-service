@@ -1,5 +1,6 @@
 package com.satish.mailservice.service;
 
+import com.satish.mailservice.dto.EmailListResponse;
 import com.satish.mailservice.dto.EmailRequest;
 import com.satish.mailservice.dto.EmailResponse;
 import com.satish.mailservice.entity.Email;
@@ -9,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +42,42 @@ public class EmailService {
 
     public EmailResponse processEmailsSync(List<EmailRequest> emailRequests) {
         return processEmails(emailRequests);
+    }
+
+    /**
+     * Get paginated list of emails from database
+     * @param page Page number (0-indexed)
+     * @param size Number of records per page (default: 10)
+     * @return EmailListResponse with paginated data
+     */
+    public EmailListResponse getEmailList(int page, int size) {
+        // Validate page and size parameters
+        if (page < 0) {
+            page = 0;
+        }
+        if (size <= 0) {
+            size = 10; // Default page size
+        }
+        
+        // Create pageable object with sorting by id descending (latest first)
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        
+        // Fetch paginated data from repository
+        Page<Email> emailPage = emailRepository.findAll(pageable);
+        
+        // Build response
+        EmailListResponse response = new EmailListResponse();
+        response.setEmails(emailPage.getContent());
+        response.setCurrentPage(emailPage.getNumber());
+        response.setPageSize(emailPage.getSize());
+        response.setTotalElements(emailPage.getTotalElements());
+        response.setTotalPages(emailPage.getTotalPages());
+        response.setHasNext(emailPage.hasNext());
+        response.setHasPrevious(emailPage.hasPrevious());
+        
+        log.info("Retrieved page {} with {} emails out of {} total", page, emailPage.getNumberOfElements(), emailPage.getTotalElements());
+        
+        return response;
     }
 
     private EmailResponse processEmails(List<EmailRequest> emailRequests) {

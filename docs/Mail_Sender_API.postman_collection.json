@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "Mail Sender API",
+    "description": "API collection for Mail Sender Service - Resume upload and email sending",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Resume Management",
+      "item": [
+        {
+          "name": "Upload Resume",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/your/resume.pdf",
+                  "description": "Resume file (PDF, DOC, or DOCX)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/mail/resume/upload",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "mail", "resume", "upload"]
+            },
+            "description": "Upload a resume file that will be attached to all outgoing emails. Supported formats: PDF, DOC, DOCX. Maximum size: 10MB."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Email Sending",
+      "item": [
+        {
+          "name": "Send Email with Resume",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"hiring@company.com\",\n  \"subject\": \"Application for Software Developer Position\",\n  \"message\": \"Dear Hiring Manager,\\n\\nI am writing to express my interest in the Software Developer position at your company. I have extensive experience in Java, Spring Boot, and modern web technologies.\\n\\nPlease find my resume attached for your review. I would welcome the opportunity to discuss how my skills and experience align with your team's needs.\\n\\nThank you for your consideration.\\n\\nBest regards,\\nSatish Yadav\\nEmail: yadavsatish.ssy02@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/mail/send",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "mail", "send"]
+            },
+            "description": "Send an email with resume attachment to a specific recipient. Requires: to (email), subject, and message."
+          },
+          "response": []
+        },
+        {
+          "name": "Send Email - Job Application Example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"hr@techcompany.com\",\n  \"subject\": \"Application for Senior Java Developer - Satish Yadav\",\n  \"message\": \"Dear Hiring Team,\\n\\nI am excited to apply for the Senior Java Developer position at TechCompany. With my strong background in Spring Boot, microservices architecture, and cloud technologies, I am confident I can contribute significantly to your team.\\n\\nKey highlights of my experience:\\n- 5+ years of Java/Spring Boot development\\n- Expertise in building scalable REST APIs\\n- Experience with MySQL, PostgreSQL, and MongoDB\\n- Strong understanding of microservices and cloud platforms\\n\\nI have attached my detailed resume for your review. I would be thrilled to discuss how my skills align with your requirements.\\n\\nThank you for considering my application.\\n\\nBest regards,\\nSatish Yadav\\nPhone: +91-XXXXXXXXXX\\nEmail: yadavsatish.ssy02@gmail.com\\nLinkedIn: linkedin.com/in/satish-yadav\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/mail/send",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "mail", "send"]
+            },
+            "description": "Example of a detailed job application email with resume attachment."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cold Email Scheduler",
+      "item": [
+        {
+          "name": "Trigger Cold Email Batch (Manual)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/mail/cold-email/trigger",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "mail", "cold-email", "trigger"]
+            },
+            "description": "Manually trigger the cold email batch for testing. This will send up to 20 cold emails to prospects from the database who haven't been contacted yet."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Mail Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/mail/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "mail", "health"]
+            },
+            "description": "Check if the mail service is running and healthy."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,12 @@ public class EmailService {
     @Transactional
     public EmailResponse importEmailsFromExcel(MultipartFile file) throws IOException {
         List<EmailRequest> emailRequests = parseExcelFile(file);
+        return processEmails(emailRequests);
+    }
+
+    @Transactional
+    public EmailResponse importEmailsFromExcel(byte[] fileBytes, String filename) throws IOException {
+        List<EmailRequest> emailRequests = parseExcelFile(fileBytes, filename);
         return processEmails(emailRequests);
     }
 
@@ -124,9 +132,17 @@ public class EmailService {
     }
 
     private List<EmailRequest> parseExcelFile(MultipartFile file) throws IOException {
+        return parseExcelFile(file.getInputStream());
+    }
+
+    private List<EmailRequest> parseExcelFile(byte[] fileBytes, String filename) throws IOException {
+        return parseExcelFile(new ByteArrayInputStream(fileBytes));
+    }
+
+    private List<EmailRequest> parseExcelFile(InputStream inputStream) throws IOException {
         List<EmailRequest> emailRequests = new ArrayList<>();
 
-        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+        try (Workbook workbook = new XSSFWorkbook(inputStream)) {
             Sheet sheet = workbook.getSheetAt(0);
 
             // Get header row to map column names

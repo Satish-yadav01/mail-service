@@ -55,8 +55,12 @@ public class EmailController {
             // Get TID from ThreadLocal
             Long tid = TransactionIdAspect.getCurrentTid();
 
+            // Read file bytes before async processing to avoid temp file deletion
+            byte[] fileBytes = file.getBytes();
+            String originalFilename = file.getOriginalFilename();
+
             // Process asynchronously
-            asyncEmailService.processExcelAsync(tid, file);
+            asyncEmailService.processExcelAsync(tid, fileBytes, originalFilename);
 
             // Return immediate acknowledgment
             AsyncResponse response = new AsyncResponse(

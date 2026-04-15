@@ -47,12 +47,12 @@ public class AsyncEmailService {
     }
 
     @Async
-    public void processExcelAsync(Long tid, MultipartFile file) {
+    public void processExcelAsync(Long tid, byte[] fileBytes, String filename) {
         log.info("Starting async Excel processing for TID: {}", tid);
         
         try {
-            // Parse and process Excel file
-            EmailResponse response = emailService.importEmailsFromExcel(file);
+            // Parse and process Excel file from byte array
+            EmailResponse response = emailService.importEmailsFromExcel(fileBytes, filename);
             
             // Update audit log with success
             updateAuditLog(tid, response, TransactionStatus.SUCCESS, 200, "Excel import completed successfully");

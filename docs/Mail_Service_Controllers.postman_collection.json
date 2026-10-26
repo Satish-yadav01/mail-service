@@ -1,0 +1,296 @@
+{
+  "info": {
+    "name": "Mail Service - All Controllers",
+    "description": "Postman collection for the REST endpoints exposed by EmailController, EmailInfoController, and MailController. Set the baseUrl collection variable for your environment. The cold-email trigger sends real email; use it only when intended.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Email Data",
+      "item": [
+        {
+          "name": "Get Email List Headers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/email-info/emailListHeaders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "email-info", "emailListHeaders"]
+            },
+            "description": "Returns the configured column headers used for email data."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Emails (Async)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const body = pm.response.json();",
+                  "  if (body && body.tid !== undefined && body.tid !== null) {",
+                  "    pm.collectionVariables.set('tid', String(body.tid));",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"firstName\": \"Ada\",\n    \"lastName\": \"Lovelace\",\n    \"email\": \"ada@example.com\",\n    \"emailStatus\": \"UNVERIFIED\",\n    \"jobTitle\": \"Engineer\",\n    \"companyName\": \"Example Company\",\n    \"companyDomain\": \"example.com\",\n    \"location\": \"London\"\n  }\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/emails/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "emails", "add"]
+            },
+            "description": "Accepts an array of email records and processes them asynchronously. On HTTP 202, the returned TID is saved to the collection variable for the transaction enquiry request."
+          },
+          "response": []
+        },
+        {
+          "name": "Import Emails from Excel (Async)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "  const body = pm.response.json();",
+                  "  if (body && body.tid !== undefined && body.tid !== null) {",
+                  "    pm.collectionVariables.set('tid', String(body.tid));",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Excel file (.xlsx or .xls)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/emails/import-excel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "emails", "import-excel"]
+            },
+            "description": "Select an Excel file in Postman. On HTTP 202, the returned TID is saved to the collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "Check Email Transaction Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/emails/enquiry?tid={{tid}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "emails", "enquiry"],
+              "query": [
+                {
+                  "key": "tid",
+                  "value": "{{tid}}",
+                  "description": "TID returned by Add Emails or Import Emails from Excel"
+                }
+              ]
+            },
+            "description": "Checks the processing status and response for the transaction identified by the TID."
+          },
+          "response": []
+        },
+        {
+          "name": "List Emails",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/emails/list?page={{page}}&size={{size}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "emails", "list"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "description": "Zero-indexed page number"
+                },
+                {
+                  "key": "size",
+                  "value": "{{size}}",
+                  "description": "Page size (up to 100)"
+                }
+              ]
+            },
+            "description": "Returns a page of stored email records. Set page and size collection variables as needed."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Mail Sender",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/mail/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mail", "health"]
+            },
+            "description": "Checks that the mail service is running."
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Resume",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select a resume file supported by the service."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mail/resume/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mail", "resume", "upload"]
+            },
+            "description": "Uploads a resume for attachment to outgoing emails. Select the file in Postman."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Resume from Google Drive Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"driveLink\": \"https://drive.google.com/file/d/FILE_ID/view\",\n  \"fileName\": \"resume.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mail/resume/drive-link",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mail", "resume", "drive-link"]
+            },
+            "description": "Adds a resume using a Google Drive share link. Replace FILE_ID with an accessible file ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Send Email with Resume",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"recipient@example.com\",\n  \"subject\": \"Example message\",\n  \"message\": \"Hello, this is a test message.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mail/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mail", "send"]
+            },
+            "description": "Sends an email to the specified recipient with the configured resume attached. Use a test recipient when validating."
+          },
+          "response": []
+        },
+        {
+          "name": "Trigger Cold Email Batch (Sends Emails)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/mail/cold-email/trigger",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mail", "cold-email", "trigger"]
+            },
+            "description": "Triggers the cold-email batch immediately and may send real emails. Run only when you intend to contact the configured recipients."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "tid",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "page",
+      "value": "0",
+      "type": "string"
+    },
+    {
+      "key": "size",
+      "value": "10",
+      "type": "string"
+    }
+  ]
+}

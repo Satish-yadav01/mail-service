@@ -144,6 +144,8 @@ public class EmailService {
 
         try (Workbook workbook = new XSSFWorkbook(inputStream)) {
             Sheet sheet = workbook.getSheetAt(0);
+            FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            DataFormatter dataFormatter = new DataFormatter();
 
             // Get header row to map column names
             Row headerRow = sheet.getRow(0);
@@ -169,25 +171,25 @@ public class EmailService {
                 if (columnMap.containsKey("firstname") || columnMap.containsKey("first name")) {
                     Integer colIndex = columnMap.getOrDefault("firstname", columnMap.get("first name"));
                     if (colIndex != null) {
-                        emailRequest.setFirstName(getCellValueAsString(row.getCell(colIndex)));
+                        emailRequest.setFirstName(getCellValueAsString(row.getCell(colIndex), formulaEvaluator, dataFormatter));
                     }
                 }
 
                 if (columnMap.containsKey("lastname") || columnMap.containsKey("last name")) {
                     Integer colIndex = columnMap.getOrDefault("lastname", columnMap.get("last name"));
                     if (colIndex != null) {
-                        emailRequest.setLastName(getCellValueAsString(row.getCell(colIndex)));
+                        emailRequest.setLastName(getCellValueAsString(row.getCell(colIndex), formulaEvaluator, dataFormatter));
                     }
                 }
 
                 if (columnMap.containsKey("email")) {
-                    emailRequest.setEmail(getCellValueAsString(row.getCell(columnMap.get("email"))));
+                    emailRequest.setEmail(getCellValueAsString(row.getCell(columnMap.get("email")), formulaEvaluator, dataFormatter));
                 }
 
                 if (columnMap.containsKey("emailstatus") || columnMap.containsKey("email status")) {
                     Integer colIndex = columnMap.getOrDefault("emailstatus", columnMap.get("email status"));
                     if (colIndex != null) {
-                        String status = getCellValueAsString(row.getCell(colIndex));
+                        String status = getCellValueAsString(row.getCell(colIndex), formulaEvaluator, dataFormatter);
                         if (status != null && !status.isEmpty()) {
                             try {
                                 emailRequest.setEmailStatus(EmailStatus.valueOf(status.toUpperCase()));
@@ -201,26 +203,26 @@ public class EmailService {
                 if (columnMap.containsKey("jobtitle") || columnMap.containsKey("job title")) {
                     Integer colIndex = columnMap.getOrDefault("jobtitle", columnMap.get("job title"));
                     if (colIndex != null) {
-                        emailRequest.setJobTitle(getCellValueAsString(row.getCell(colIndex)));
+                        emailRequest.setJobTitle(getCellValueAsString(row.getCell(colIndex), formulaEvaluator, dataFormatter));
                     }
                 }
 
                 if (columnMap.containsKey("companyname") || columnMap.containsKey("company name")) {
                     Integer colIndex = columnMap.getOrDefault("companyname", columnMap.get("company name"));
                     if (colIndex != null) {
-                        emailRequest.setCompanyName(getCellValueAsString(row.getCell(colIndex)));
+                        emailRequest.setCompanyName(getCellValueAsString(row.getCell(colIndex), formulaEvaluator, dataFormatter));
                     }
                 }
 
                 if (columnMap.containsKey("companydomain") || columnMap.containsKey("company domain")) {
                     Integer colIndex = columnMap.getOrDefault("companydomain", columnMap.get("company domain"));
                     if (colIndex != null) {
-                        emailRequest.setCompanyDomain(getCellValueAsString(row.getCell(colIndex)));
+                        emailRequest.setCompanyDomain(getCellValueAsString(row.getCell(colIndex), formulaEvaluator, dataFormatter));
                     }
                 }
 
                 if (columnMap.containsKey("location")) {
-                    emailRequest.setLocation(getCellValueAsString(row.getCell(columnMap.get("location"))));
+                    emailRequest.setLocation(getCellValueAsString(row.getCell(columnMap.get("location")), formulaEvaluator, dataFormatter));
                 }
 
                 // Only add if email is present
@@ -233,7 +235,7 @@ public class EmailService {
         return emailRequests;
     }
 
-    private String getCellValueAsString(Cell cell) {
+    private String getCellValueAsString(Cell cell, FormulaEvaluator formulaEvaluator, DataFormatter dataFormatter) {
         if (cell == null) {
             return null;
         }
@@ -250,7 +252,7 @@ public class EmailService {
             case BOOLEAN:
                 return String.valueOf(cell.getBooleanCellValue());
             case FORMULA:
-                return cell.getCellFormula();
+                return dataFormatter.formatCellValue(cell, formulaEvaluator);
             default:
                 return null;
         }

@@ -14,7 +14,7 @@ public class CorsConfig implements WebMvcConfigurer {
     private final List<String> allowedOrigins;
 
     public CorsConfig(
-            @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:4200}")
+            @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:4200,https://mail-desk-three.vercel.app}")
             String allowedOrigins) {
         this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)

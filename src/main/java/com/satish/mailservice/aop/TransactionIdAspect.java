@@ -10,12 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.lang.reflect.Method;
 
 @Aspect
 @Component
@@ -42,6 +44,7 @@ public class TransactionIdAspect {
                 HttpServletRequest request = attributes.getRequest();
                 auditLog.setMethod(request.getMethod());
                 auditLog.setUrl(request.getRequestURI());
+                captureUserId(joinPoint, auditLog);
             }
 
             // Capture request body
@@ -65,24 +68,33 @@ public class TransactionIdAspect {
         }
     }
 
+    private void captureUserId(ProceedingJoinPoint joinPoint, EmailAuditLog auditLog) {
+        Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
+        Object[] arguments = joinPoint.getArgs();
+        for (int i = 0; i < method.getParameterCount(); i++) {
+            RequestParam requestParam = method.getParameters()[i].getAnnotation(RequestParam.class);
+            if (requestParam != null
+                    && "user_id".equals(requestParam.value())
+                    && arguments[i] instanceof Long userId) {
+                auditLog.setUserId(userId);
+                return;
+            }
+        }
+    }
+
     private String captureRequestBody(ProceedingJoinPoint joinPoint) {
         try {
             Object[] args = joinPoint.getArgs();
-            if (args != null && args.length > 0) {
-                // Find the first non-MultipartFile argument (which is likely the request body)
-                for (Object arg : args) {
-                    if (arg != null && !(arg instanceof org.springframework.web.multipart.MultipartFile)) {
-                        // Serialize the argument to JSON
-                        return objectMapper.writeValueAsString(arg);
-                    }
+            Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
+            for (int i = 0; i < method.getParameterCount(); i++) {
+                if (method.getParameters()[i].isAnnotationPresent(RequestBody.class)) {
+                    return objectMapper.writeValueAsString(args[i]);
                 }
-                // If only MultipartFile, return file info
-                for (Object arg : args) {
-                    if (arg instanceof org.springframework.web.multipart.MultipartFile) {
-                        org.springframework.web.multipart.MultipartFile file = (org.springframework.web.multipart.MultipartFile) arg;
-                        return String.format("{\"fileName\":\"%s\",\"fileSize\":%d,\"contentType\":\"%s\"}", 
+            }
+            for (Object arg : args) {
+                if (arg instanceof org.springframework.web.multipart.MultipartFile file) {
+                    return String.format("{\"fileName\":\"%s\",\"fileSize\":%d,\"contentType\":\"%s\"}",
                             file.getOriginalFilename(), file.getSize(), file.getContentType());
-                    }
                 }
             }
         } catch (Exception e) {

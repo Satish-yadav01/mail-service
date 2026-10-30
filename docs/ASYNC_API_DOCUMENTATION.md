@@ -25,6 +25,7 @@ The email import operations have been optimized to use asynchronous processing. 
 | statusCode | INT | HTTP status code |
 | statusMsg | VARCHAR | Status message |
 | txnStatus | ENUM | Transaction status: PENDING, SUCCESS, FAILED |
+| user_id | BIGINT | ID of the enabled user who submitted the request |
 
 ## API Endpoints
 
@@ -34,6 +35,7 @@ The email import operations have been optimized to use asynchronous processing. 
 **Request:**
 - Content-Type: `multipart/form-data`
 - Parameter: `file` (Excel file)
+- Parameter: `user_id` (long, required; must identify an enabled user)
 
 **Response (202 Accepted):**
 ```json
@@ -47,6 +49,7 @@ The email import operations have been optimized to use asynchronous processing. 
 **cURL Example:**
 ```bash
 curl -X POST http://localhost:8080/api/emails/import-excel \
+  -F "user_id=12" \
   -F "file=@emails.xlsx"
 ```
 
@@ -57,6 +60,7 @@ curl -X POST http://localhost:8080/api/emails/import-excel \
 
 **Request:**
 - Content-Type: `application/json`
+- Query Parameter: `user_id` (long, required; must identify an enabled user)
 - Body: Array of email objects
 
 ```json
@@ -85,7 +89,7 @@ curl -X POST http://localhost:8080/api/emails/import-excel \
 
 **cURL Example:**
 ```bash
-curl -X POST http://localhost:8080/api/emails/add \
+curl -X POST "http://localhost:8080/api/emails/add?user_id=12" \
   -H "Content-Type: application/json" \
   -d '[
     {
@@ -104,10 +108,11 @@ curl -X POST http://localhost:8080/api/emails/add \
 ---
 
 ### 3. Enquiry Status
-**GET** `/api/emails/enquiry?tid={tid}`
+**GET** `/api/emails/enquiry?tid={tid}&user_id={user_id}`
 
 **Request:**
 - Query Parameter: `tid` (Transaction ID)
+- Query Parameter: `user_id` (long, required; must identify an enabled user and own the transaction)
 
 **Response (200 OK) - Pending:**
 ```json
@@ -163,8 +168,36 @@ curl -X POST http://localhost:8080/api/emails/add \
 
 **cURL Example:**
 ```bash
-curl -X GET "http://localhost:8080/api/emails/enquiry?tid=550e8400-e29b-41d4-a716-446655440000"
+curl -X GET "http://localhost:8080/api/emails/enquiry?tid=1&user_id=12"
 ```
+
+---
+
+### 4. List Emails
+**GET** `/api/emails/list?page={page}&size={size}&user_id={user_id}`
+
+The required `user_id` query parameter must identify an enabled user.
+
+```bash
+curl -X GET "http://localhost:8080/api/emails/list?page=0&size=10&user_id=12"
+```
+
+### 5. List User Transactions
+**GET** `/api/emails/transactions?user_id={user_id}&page={page}&size={size}`
+
+Returns the enabled user's transactions ordered newest first by TID. Each transaction contains only `tid`, `userId`, `url`, `statusCode`, `statusMsg`, and `txnStatus`. `page` is zero-based, `size` defaults to 10 and is capped at 100.
+
+```bash
+curl -X GET "http://localhost:8080/api/emails/transactions?user_id=12&page=0&size=10"
+```
+
+The paginated response uses the `transactions` field for the transaction list.
+
+The mail service checks the user status through the user service endpoint
+`GET /api/v1/internal/users/{userId}/status`. Configure `USER_SERVICE_BASE_URL`
+to the user-service base URL and set the same `USER_SERVICE_API_KEY` secret in
+both services. The user-service endpoint returns `{ "userId": 12, "enabled": true }`
+for a known user and requires the `X-Internal-Api-Key` header.
 
 ---
 
@@ -206,6 +239,8 @@ spring.task.execution.thread-name-prefix=async-
 ## Error Handling
 
 - **Validation errors**: Return 400 Bad Request immediately
+- **Unknown user ID**: Return 404 Not Found
+- **Disabled user ID**: Return 403 Forbidden
 - **Processing errors**: Captured in audit log with FAILED status
 - **System errors**: Return 500 Internal Server Error
 
@@ -219,8 +254,11 @@ spring.task.execution.thread-name-prefix=async-
 ## Example Client Implementation
 
 ```javascript
-async function importEmails(file) {
+async function importEmails(file, userId) {
   // Step 1: Submit import request
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('user_id', userId);
   const response = await fetch('/api/emails/import-excel', {
     method: 'POST',
     body: formData
@@ -234,7 +272,7 @@ async function importEmails(file) {
   while (status === 'PENDING') {
     await sleep(3000); // Wait 3 seconds
     
-    const statusResponse = await fetch(`/api/emails/enquiry?tid=${tid}`);
+    const statusResponse = await fetch(`/api/emails/enquiry?tid=${tid}&user_id=${userId}`);
     const statusData = await statusResponse.json();
     
     status = statusData.txnStatus;

@@ -31,6 +31,13 @@ public class GlobalExceptionHandler {
                 .body(new EmailResponse(false, exc.getMessage(), 0, 0, 0));
     }
 
+    @ExceptionHandler(UserAccessException.class)
+    public ResponseEntity<Map<String, String>> handleUserAccessException(UserAccessException exc) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", exc.getMessage());
+        return ResponseEntity.status(exc.getStatus()).body(error);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException exc) {
         Map<String, String> errors = new HashMap<>();

@@ -20,6 +20,9 @@ public class EmailAuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tid;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     private String method;
 
     private String url;

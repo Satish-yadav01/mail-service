@@ -49,7 +49,7 @@ public class ColdEmailSchedulerService {
      * - Month: * (every month)
      * - Day of week: ? (any day)
      */
-    @Scheduled(cron = "${scheduler.cold-email.cron:0 0 20 * * ?}")
+//    @Scheduled(cron = "${scheduler.cold-email.cron:0 0 20 * * ?}")
     public void sendScheduledColdEmails() {
         if (!schedulerEnabled) {
             log.info("Cold email scheduler is disabled");
